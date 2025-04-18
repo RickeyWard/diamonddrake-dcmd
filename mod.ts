@@ -50,7 +50,10 @@ export const dsCmd = async (
   try {
     const { stdout, stderr, code, ok } = await dCmd(exePath, ...args);
     if (!ok) {
-      console.error(`[exit code: ${code}] stderr-> ${stderr || stdout}`);
+      const cmdName = exePath.split(/[\\/]/).pop() || exePath;
+      console.error(
+        `[${cmdName}] (exit code: ${code}) stderr-> ${stderr || stdout}`,
+      );
       Deno.exit(code);
     } else {
       return stdout;
