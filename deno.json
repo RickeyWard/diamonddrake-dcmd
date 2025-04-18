@@ -2,6 +2,7 @@
   "name": "@diamonddrake/dcmd",
   "version": "0.1.0",
   "license": "MIT",
+  "description": "Process command wrapper, simplifies the most common use case.",
   "exports": "./mod.ts",
   "tasks": {
     "fmt": "deno fmt --check"
