@@ -23,6 +23,7 @@ jobs:
 
       - name: lint
         run: deno lint
+      - name: fmt
         run: deno fmt --check
 
       - name: Publish
