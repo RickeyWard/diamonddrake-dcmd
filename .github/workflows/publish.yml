@@ -18,11 +18,12 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: lint
         run: deno lint
         run: deno fmt --check
 
       - name: Publish
-        uses: actions/checkout@v4
         run: npx jsr publish # can also be Deno publish
