@@ -37,29 +37,51 @@ export const dCmd = async (
  * Will exit if the command fails, logging the stderr and exit code.
  * @param exePath - The path to the executable to run.
  * @param args - The arguments to pass to the executable.
+ * @param logCallback - Optional callback to handle logging of errors (or error hooks). If not provided, will use console.error.
  * @returns The stdout of the command.
  *
  * @example
  * const stdout = await dsCmd("curl", "https://www.google.com");
  * console.log(stdout);
+ *
+ * @example
+ * const stdout = await dsCmd("curl", "https://www.google.com", (cmdName, code, error) => {
+ *   console.log(`Command ${cmdName} failed with code ${code}: ${error}`);
+ * });
  */
 export const dsCmd = async (
   exePath: string,
-  ...args: string[]
+  ...args: (string | ((cmdName: string, code: number, error: string) => void))[]
 ): Promise<string> => {
+  const logCallback = typeof args[args.length - 1] === "function"
+    ? args.pop() as (cmdName: string, code: number, error: string) => void
+    : undefined;
+
+  const cmdArgs = args as string[];
+
   try {
-    const { stdout, stderr, code, ok } = await dCmd(exePath, ...args);
+    const { stdout, stderr, code, ok } = await dCmd(exePath, ...cmdArgs);
     if (!ok) {
       const cmdName = exePath.split(/[\\/]/).pop() || exePath;
-      console.error(
-        `[${cmdName}] (exit code: ${code}) stderr-> ${stderr || stdout}`,
-      );
+      const error = stderr || stdout;
+      if (logCallback) {
+        logCallback(cmdName, code, error);
+      } else {
+        console.error(
+          `[${cmdName}] (exit code: ${code}) stderr-> ${error}`,
+        );
+      }
       Deno.exit(code);
     } else {
       return stdout;
     }
   } catch (e) {
-    console.error(e);
+    const error = e instanceof Error ? e.message : String(e);
+    if (logCallback) {
+      logCallback(exePath, 1, error);
+    } else {
+      console.error(error);
+    }
     Deno.exit(1);
   }
 };
